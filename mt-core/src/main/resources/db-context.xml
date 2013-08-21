@@ -9,15 +9,12 @@
         <entry key="tenant2" value-ref="dataSource2"/>
     </util:map>
 
-    <alias name="sessionFactory" alias="sessionFactory2"/>
-
     <bean id="sessionFactory" class="net.tajzich.mt.multitenancy.LocalSessionFactoryBean">
         <property name="dataSourceMap" ref="datasources"/>
         <property name="dataSource" ref="dataSource1"/>
         <property name="hibernateProperties">
             <map>
                 <entry key="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
-                <!--<entry key="hibernate.hbm2ddl.auto" value="create" />-->
                 <entry key="hibernate.show_sql" value="true"/>
                 <entry key="hibernate.multiTenancy" value="DATABASE"/>
                 <entry key="hibernate.tenant_identifier_resolver" value-ref="webSessionTenantIdentifierResolver"/>
