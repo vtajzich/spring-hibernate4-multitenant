@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <util:map id="datasources">
+        <entry key="tenant1" value-ref="dataSource1"/>
+        <entry key="tenant2" value-ref="dataSource2"/>
+    </util:map>
+
+    <alias name="sessionFactory" alias="sessionFactory2"/>
+
+    <bean id="sessionFactory" class="net.tajzich.mt.multitenancy.LocalSessionFactoryBean">
+        <property name="dataSourceMap" ref="datasources"/>
+        <property name="dataSource" ref="dataSource1"/>
+        <property name="hibernateProperties">
+            <map>
+                <entry key="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+                <!--<entry key="hibernate.hbm2ddl.auto" value="create" />-->
+                <entry key="hibernate.show_sql" value="true"/>
+                <entry key="hibernate.multiTenancy" value="DATABASE"/>
+                <entry key="hibernate.tenant_identifier_resolver" value-ref="webSessionTenantIdentifierResolver"/>
+                <entry key="hibernate.multi_tenant_connection_provider" value-ref="simpleTenantConnectionProvider"/>
+            </map>
+        </property>
+        <property name="annotatedClasses">
+            <list>
+                <value>net.tajzich.mt.domain.User</value>
+                <value>net.tajzich.mt.domain.TodoItem</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="webSessionTenantIdentifierResolver"
+          class="net.tajzich.mt.multitenancy.WebSessionCurrentTenantIdentifierResolver" scope="request">
+        <aop:scoped-proxy/>
+    </bean>
+
+    <bean id="simpleTenantConnectionProvider" class="net.tajzich.mt.multitenancy.SimpleMultiTenantConnectionProvider">
+        <property name="dataSourceMap" ref="datasources"/>
+    </bean>
+
+    <bean id="dataSource1" parent="abstractDataSource">
+        <property name="url" value="jdbc:mysql://localhost/mt1"/>
+        <property name="username" value="mt1"/>
+        <property name="password" value="mt1"/>
+    </bean>
+
+    <bean id="dataSource2" parent="abstractDataSource">
+        <property name="url" value="jdbc:mysql://localhost/mt2"/>
+        <property name="username" value="mt2"/>
+        <property name="password" value="mt2"/>
+    </bean>
+
+    <bean class="org.apache.commons.dbcp.BasicDataSource" abstract="true" destroy-method="close"
+          id="abstractDataSource">
+        <property name="driverClassName" value="${database.driverClassName}"/>
+        <property name="testOnBorrow" value="true"/>
+        <property name="testOnReturn" value="true"/>
+        <property name="testWhileIdle" value="true"/>
+        <property name="timeBetweenEvictionRunsMillis" value="1800000"/>
+        <property name="numTestsPerEvictionRun" value="3"/>
+        <property name="minEvictableIdleTimeMillis" value="1800000"/>
+        <property name="validationQuery" value="SELECT 1"/>
+    </bean>
+
+</beans>

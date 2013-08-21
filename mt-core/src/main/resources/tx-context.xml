@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <tx:advice id="txServiceDao" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="exists" propagation="SUPPORTS" rollback-for="java.lang.Exception"/>
+            <tx:method name="find*" propagation="SUPPORTS" rollback-for="java.lang.Exception"/>
+            <tx:method name="get*" propagation="SUPPORTS" rollback-for="java.lang.Exception"/>
+            <tx:method name="*" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="*Commit" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:pointcut id="serviceInvocation"
+                      expression="execution(public * net.tajzich.mt.service.MultitenantService.*(..))"/>
+        <aop:advisor pointcut-ref="serviceInvocation" advice-ref="txServiceDao"/>
+    </aop:config>
+
+</beans>
